@@ -25,7 +25,7 @@ export const ContactForm = () => {
     <div id="contact-form" className="py-20 bg-white">
       <div className="container mx-auto px-4 max-w-md">
         <h2 className="text-3xl md:text-4xl font-bold text-center mb-2">
-          Act Now - Limited Spots Available!
+          Limited Availability: Schedule Your Consultation Today
         </h2>
         <p className="text-center text-gray-600 mb-8">
           Due to high demand, we can only accept a limited number of new clients this month
