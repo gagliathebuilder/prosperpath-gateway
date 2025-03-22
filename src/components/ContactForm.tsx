@@ -1,7 +1,9 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 export const ContactForm = () => {
   const [formData, setFormData] = useState({
@@ -9,16 +11,44 @@ export const ContactForm = () => {
     email: "",
     phone: "",
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Form submitted:", formData);
-    toast({
-      title: "Thanks for reaching out!",
-      description: "We'll contact you within 24 hours to schedule your consultation.",
-    });
-    setFormData({ name: "", email: "", phone: "" });
+    setIsSubmitting(true);
+    
+    try {
+      // Insert form data into the bookings table
+      const { data, error } = await supabase
+        .from('bookings')
+        .insert([formData]);
+      
+      if (error) {
+        console.error("Error submitting form:", error);
+        toast({
+          title: "Something went wrong",
+          description: "Unable to submit your request. Please try again later.",
+          variant: "destructive",
+        });
+      } else {
+        console.log("Form submitted to database:", formData);
+        toast({
+          title: "Thanks for reaching out!",
+          description: "We'll contact you within 24 hours to schedule your consultation.",
+        });
+        setFormData({ name: "", email: "", phone: "" });
+      }
+    } catch (err) {
+      console.error("Exception when submitting form:", err);
+      toast({
+        title: "Something went wrong",
+        description: "Unable to submit your request. Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -61,8 +91,12 @@ export const ContactForm = () => {
               className="w-full"
             />
           </div>
-          <Button type="submit" className="w-full bg-secondary hover:bg-secondary/90 text-lg font-semibold">
-            Book With a Licensed Professional
+          <Button 
+            type="submit" 
+            className="w-full bg-secondary hover:bg-secondary/90 text-lg font-semibold"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Submitting..." : "Book With a Licensed Professional"}
           </Button>
           <p className="text-sm text-center text-gray-500 mt-4">
             Secure your financial future with a certified expert
